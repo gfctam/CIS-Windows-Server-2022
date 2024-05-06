@@ -225,7 +225,7 @@ $ExecutionList = @(
     "PublicLogFileSize",                                                #9.3.8
     "PublicLogDroppedPackets",                                          #9.3.9
     "PublicLogSuccessfulConnections",                                   #9.3.10
-    "AuditCredentialValidation",                                        #17.1.1
+    <#"AuditCredentialValidation",                                        #17.1.1
     #17.1.2 Not Applicable to Member Server (2023.01.27)
     #17.1.3 Not Applicable to Member Server (2023.01.27)
     "AuditComputerAccountManagement",                                   #17.2.1
@@ -258,7 +258,7 @@ $ExecutionList = @(
     "AuditOtherSystemEvents",                                           #17.9.2
     "AuditSecurityStateChange",                                         #17.9.3
     "AuditSecuritySystemExtension",                                     #17.9.4
-    "AuditSystemIntegrity",                                             #17.9.5
+    "AuditSystemIntegrity",                                             #17.9.5#>
     "PreventEnablingLockScreenCamera",                                  #18.1.1.1
     "PreventEnablingLockScreenSlideShow",                               #18.1.1.2
     "DisallowUsersToEnableOnlineSpeechRecognitionServices",             #18.1.2.2 (2023.01.27 - updated from 18.1.2.1)
@@ -620,14 +620,14 @@ function SetRegistry([string] $path, [string] $key, [string] $value, [string] $k
     Write-Before "Was: Not Defined!"
     $keyExists = RegKeyExists $path
     
-    if ($keyExists -eq $false) {
+    <#if ($keyExists -eq $false) {
       Write-Info "Creating registry key '$($path)'."
       New-Item $path -Force -ErrorAction SilentlyContinue
       CheckError $? "Creating registry key '$($path)' failed."
-    }
+    }#>
   }
 
-    Set-ItemProperty -Path $path -Name $key -Value $value -Type $keytype -ErrorAction SilentlyContinue
+    #Set-ItemProperty -Path $path -Name $key -Value $value -Type $keytype -ErrorAction SilentlyContinue
 
     CheckError $? "Creating registry value '$($path):$($value)' failed."
     
@@ -636,7 +636,7 @@ function SetRegistry([string] $path, [string] $key, [string] $value, [string] $k
 
     if ($before.$key -ne $after.$key) {
         Write-Red "Value changed."
-        $global:valueChanges += "$path => $($before.$key) to $($after.$key)"
+        #$global:valueChanges += "$path => $($before.$key) to $($after.$key)"
     }
 }
 
@@ -649,7 +649,7 @@ function DeleteRegistryValue([string] $path, [string] $key) {
     Write-Before "Was: Not Defined!"
   }
 
-  Remove-ItemProperty -Path $path -Name $key -ErrorAction SilentlyContinue
+  #Remove-ItemProperty -Path $path -Name $key -ErrorAction SilentlyContinue
 
   $after = Get-ItemProperty -Path $path -Name $key -ErrorAction SilentlyContinue
 
@@ -662,7 +662,7 @@ function DeleteRegistryValue([string] $path, [string] $key) {
 
   if ($before.$key -ne $after.$key) {
     Write-Red "Value changed."
-    $global:valueChanges += "$path => $($before.$key) to $($after.$key)"
+    #$global:valueChanges += "$path => $($before.$key) to $($after.$key)"
   }
 }
 
@@ -717,13 +717,13 @@ function SetSecEdit([string]$role, [string[]] $values, $area, $enforceCreation) 
             $before = $($lines[$i])
             Write-Before "Was: $before"
             
-            $lines[$i] = $config
+            #$lines[$i] = $config
             $valueSet = $true
             Write-After "Now: $config"
-            
+
             if ($config.Replace(" ","").Trim(",") -ne $before.Replace(" ","").Trim(",")) {
                 Write-Red "Value changed."
-                $global:valueChanges += "$before => $config"
+                #$global:valueChanges += "$before => $config"
             }
 
             break;
@@ -735,30 +735,30 @@ function SetSecEdit([string]$role, [string[]] $values, $area, $enforceCreation) 
             Write-Before "Was: Not Defined"
 
             # If a configuration option does not exist and comes before the [version] tag, it will not be applied, but if we add it before the [version] tag, it gets applied
-            $lines = $lines | Where-Object {$_ -notin ("[Version]",'signature="$CHICAGO$"',"Revision=1")}
-            $lines += $config
+            #$lines = $lines | Where-Object {$_ -notin ("[Version]",'signature="$CHICAGO$"',"Revision=1")}
+            #$lines += $config
 
-            $after = $($lines[$lines.Length -1])
+            #$after = $($lines[$lines.Length -1])
             Write-After "Now: $($after)"
 
             if ($after -ne "$($role) = `"`"") {
                     Write-Red "Value changed."
-                    $global:valueChanges += "Not defined => $after"
+                    #$global:valueChanges += "Not defined => $after"
             }
 
             # Rewrite the version tag
-            $lines += "[Version]"
-            $lines += 'signature="$CHICAGO$"'
-            $lines += "Revision=1"
+            #$lines += "[Version]"
+            #$lines += 'signature="$CHICAGO$"'
+            #$lines += "Revision=1"
         }
     }
 
-    $lines | out-file ${env:appdata}\secpol.cfg
+    #$lines | out-file ${env:appdata}\secpol.cfg
 
-    secedit /configure /db c:\windows\security\local.sdb /cfg ${env:appdata}\secpol.cfg /areas $area
-    CheckError $? "Configuring '$($area)' via $(${env:appdata})\secpol.cfg' failed."
+    #secedit /configure /db c:\windows\security\local.sdb /cfg ${env:appdata}\secpol.cfg /areas $area
+    #CheckError $? "Configuring '$($area)' via $(${env:appdata})\secpol.cfg' failed."
   
-    Remove-Item -force ${env:appdata}\secpol.cfg -confirm:$false
+    #Remove-Item -force ${env:appdata}\secpol.cfg -confirm:$false
 }
 
 function SetUserRight([string]$role, [string[]] $values, $enforceCreation=$true) {
@@ -775,14 +775,14 @@ function CreateASRExclusions {
     #Clear current exclusions
     $currentExclusions = (Get-MpPreference).AttackSurfaceReductionOnlyExclusions
     foreach ($e in $currentExclusions) {
-        Remove-MpPreference -AttackSurfaceReductionOnlyExclusions $e
+        #Remove-MpPreference -AttackSurfaceReductionOnlyExclusions $e
     }
 
     # Create the ASR exclusions
     foreach ($e in $AttackSurfaceReductionExclusions) {
       if (Test-Path $e) {
         Write-Host "Excluding: " $e
-        Add-MpPreference -AttackSurfaceReductionOnlyExclusions $e
+        #Add-MpPreference -AttackSurfaceReductionOnlyExclusions $e
       }
     }
 }
@@ -790,7 +790,7 @@ function CreateASRExclusions {
 function SetWindowsDefenderLogSize {
     $log = Get-LogProperties "Microsoft-Windows-Windows Defender/Operational"
     $log.MaxLogSize = $WindowsDefenderLogSize
-    Set-LogProperties -LogDetails $log
+    #Set-LogProperties -LogDetails $log
 }
 
 function CreateUserAccount([string] $username, [securestring] $password, [bool] $isAdmin=$false) {
@@ -803,7 +803,7 @@ function CreateUserAccount([string] $username, [securestring] $password, [bool] 
         New-LocalUser -Name $username -Password $password -Description "" -AccountNeverExpires -PasswordNeverExpires
         Write-Info "New Administrator account created: $($username)."
         if($isAdmin -eq $true) {
-            Add-LocalGroupMember -Group "Administrators" -Member $username
+            #Add-LocalGroupMember -Group "Administrators" -Member $username
             Write-Info "Administrator account $($username) is now member of the local Administrators group."
         }
 
@@ -1053,7 +1053,7 @@ function DenyGuestLocalLogon {
 
     $addlDenyUsers = ""
     if ($AdditionalUsersToDenyLocalLogon.Count -gt 0) {
-      $addlDenyUsers = $AdditionalUsersToDenyLocalLogon -join ","
+      #$addlDenyUsers = $AdditionalUsersToDenyLocalLogon -join ","
     }
 
     SetUserRight "SeDenyInteractiveLogonRight" ($addlDenyUsers,$SID_GUESTS)
@@ -1821,70 +1821,70 @@ function PublicLogSuccessfulConnections {
     SetRegistry "HKLM:\SOFTWARE\Policies\Microsoft\WindowsFirewall\PublicProfile\Logging" "LogSuccessfulConnections" "1" $REG_DWORD
 }
 
-function AuditCredentialValidation {
+<#function AuditCredentialValidation {
     #17.1.1 => Computer Configuration\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\Account Logon\Audit Credential Validation
-    Write-Info "17.1.1 (L1) Ensure 'Audit Credential Validation' is set to 'Success and Failure'"
-    Auditpol /set /subcategory:"Credential Validation" /success:enable /failure:enable
+    #Write-Info "17.1.1 (L1) Ensure 'Audit Credential Validation' is set to 'Success and Failure'"
+    #Auditpol /set /subcategory:"Credential Validation" /success:enable /failure:enable
 }
 
 function AuditComputerAccountManagement {
     #17.2.1 => Computer Configuration\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\Account Management\Audit Application Group Management
-    Write-Info "17.2.1 (L1) Ensure 'Audit Application Group Management' is set to 'Success and Failure'"
-    Auditpol /set /subcategory:"Application Group Management" /success:enable /failure:enable
+    #Write-Info "17.2.1 (L1) Ensure 'Audit Application Group Management' is set to 'Success and Failure'"
+    #Auditpol /set /subcategory:"Application Group Management" /success:enable /failure:enable
 }
 
 function AuditSecurityGroupManagement {
     #17.2.5 => Computer Configuration\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\Account Management\Audit Security Group Management
-    Write-Info "17.2.5 (L1) Ensure 'Audit Security Group Management' is set to include 'Success'"
-    Auditpol /set /subcategory:"Security Group Management" /success:enable /failure:disable
+    #Write-Info "17.2.5 (L1) Ensure 'Audit Security Group Management' is set to include 'Success'"
+    #Auditpol /set /subcategory:"Security Group Management" /success:enable /failure:disable
 }
 
 function AuditUserAccountManagement {
     #17.2.6 => Computer Configuration\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\Account Management\Audit User Account Management 
-    Write-Info "17.2.6 (L1) Ensure 'Audit User Account Management' is set to 'Success and Failure'"
-    Auditpol /set /subcategory:"User Account Management" /success:enable /failure:enable
+    #Write-Info "17.2.6 (L1) Ensure 'Audit User Account Management' is set to 'Success and Failure'"
+    #Auditpol /set /subcategory:"User Account Management" /success:enable /failure:enable
 }
 
 function AuditPNPActivity {
     #17.3.1 => Computer Configuration\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\Detailed Tracking\Audit PNP Activity
-    Write-Info "17.3.1 (L1) Ensure 'Audit PNP Activity' is set to include 'Success'"
-    Auditpol /set /subcategory:"Plug and Play Events" /success:enable /failure:disable
+    #Write-Info "17.3.1 (L1) Ensure 'Audit PNP Activity' is set to include 'Success'"
+    #Auditpol /set /subcategory:"Plug and Play Events" /success:enable /failure:disable
 }
 
 function AuditProcessCreation {
     #17.3.2 => Computer Configuration\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\Detailed Tracking\Audit Process Creation
     Write-Info "17.3.2 (L1) Ensure 'Audit Process Creation' is set to include 'Success'"
-    Auditpol /set /subcategory:"Process Creation" /success:enable /failure:disable
+    #Auditpol /set /subcategory:"Process Creation" /success:enable /failure:disable
 }
 
 function AuditAccountLockout {
     #17.5.1 => Computer Configuration\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\Logon/Logoff\Audit Account Lockout
     Write-Info "17.5.1 (L1) Ensure 'Audit Account Lockout' is set to include 'Failure'"
-    Auditpol /set /subcategory:"Account Lockout" /success:disable /failure:enable
+    #Auditpol /set /subcategory:"Account Lockout" /success:disable /failure:enable
 }
 
 function AuditGroupMembership  {
     #17.5.2 => Computer Configuration\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\Logon/Logoff\Audit Group Membership
     Write-Info "17.5.2 (L1) Ensure 'Audit Group Membership' is set to include 'Success'"
-    Auditpol /set /subcategory:"Group Membership" /success:enable /failure:disable
+    #Auditpol /set /subcategory:"Group Membership" /success:enable /failure:disable
 }
 
 function AuditLogoff {
     #17.5.3 => Computer Configuration\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\Logon/Logoff\Audit Logoff
     Write-Info "17.5.3 (L1) Ensure 'Audit Logoff' is set to include 'Success'"
-    Auditpol /set /subcategory:"Logoff" /success:enable /failure:disable
+    #Auditpol /set /subcategory:"Logoff" /success:enable /failure:disable
 }
 
 function AuditLogon {
     #17.5.4 => Computer Configuration\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\Logon/Logoff\Audit Logon 
     Write-Info "17.5.4 (L1) Ensure 'Audit Logon' is set to 'Success and Failure'"
-    Auditpol /set /subcategory:"Logon" /success:enable /failure:enable
+    #Auditpol /set /subcategory:"Logon" /success:enable /failure:enable
 } 
 
 function AuditOtherLogonLogoffEvents {
     #17.5.5 => Computer Configuration\Policies\Windows Settings\Security Settings\Advanced Audit Policy Configuration\Audit Policies\Logon/Logoff\Audit Other Logon/Logoff Events
     Write-Info "17.5.5 (L1) Ensure 'Audit Other Logon/Logoff Events' is set to 'Success and Failure'"
-    Auditpol /set /subcategory:"Other Logon/Logoff Events" /success:enable /failure:enable
+    #Auditpol /set /subcategory:"Other Logon/Logoff Events" /success:enable /failure:enable
 }
 
 function AuditSpecialLogon {
@@ -1982,7 +1982,7 @@ function AuditSystemIntegrity {
     Write-Info "17.9.5 (L1) Ensure 'Audit System Integrity' is set to 'Success and Failure'"
     Auditpol /set /subcategory:"System Integrity" /success:enable /failure:enable
 }
-
+#>
 function PreventEnablingLockScreenCamera {
     #18.1.1.1 => Computer Configuration\Policies\Administrative Templates\Control Panel\Personalization\Prevent enabling lock screen camera 
     Write-Info "18.1.1.1 (L1) Ensure 'Prevent enabling lock screen camera' is set to 'Enabled'"
@@ -3273,20 +3273,21 @@ if(([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::G
     return 1;
 }
 
-Write-Info "CIS Microsoft Windows Server 2022 Benchmark"
-Write-Info "Script by Evan Greene"
-Write-Info "Original Script written and tested by Vinicius Miguel"
+#Write-Info "CIS Microsoft Windows Server 2022 Benchmark"
+#Write-Info "Script by Evan Greene"
+#Write-Info "Original Script written and tested by Vinicius Miguel"
 
 # Enable Windows Defender settings on Windows Server
-Set-MpPreference -AllowNetworkProtectionOnWinServer 1
-Set-MpPreference -AllowNetworkProtectionDownLevel 1
-Set-MpPreference -AllowDatagramProcessingOnWinServer 1
+#Set-MpPreference -AllowNetworkProtectionOnWinServer 1
+#Set-MpPreference -AllowNetworkProtectionDownLevel 1
+#Set-MpPreference -AllowDatagramProcessingOnWinServer 1
 
 $temp_pass1 = ""
 $temp_pass2 = ""
 $invalid_pass = $true
 
 # Get input password if the admin account does not already exist
+<#
 $NewLocalAdminExists = Get-LocalUser -Name $NewLocalAdmin -ErrorAction SilentlyContinue
 if ($NewLocalAdminExists.Count -eq 0) {
     do {
@@ -3307,7 +3308,7 @@ if ($NewLocalAdminExists.Count -eq 0) {
         }
     } while($invalid_pass -eq $false)
 }
-
+#>
 $location = Get-Location
     
 secedit /export /cfg "$location\secedit_original.cfg"  | out-null
